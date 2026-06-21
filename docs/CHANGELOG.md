@@ -1,0 +1,27 @@
+# Changelog
+
+## v0.1.0 - 2026-06-21
+
+### New
+
+- Added JSON configuration for watch paths, ignored directories, ignored file
+  patterns, log destination, and monitoring mode.
+- Added monitoring of multiple Chrome profile directories.
+- Added exact path-component filtering for ignored directory names.
+- Added wildcard filtering for ignored filename patterns.
+- Added helper functions for reading watcher configuration.
+
+### What's changed
+
+- Kept `main.py` responsible for observer setup while moving configuration
+  access into `helpers.py`.
+- Preserved the v0.0.0 generic watcher as the fallback when Chromium mode is
+  disabled.
+- Changed the default structured event output to JSONL.
+
+## v0.0.0
+
+- Fixed the file watcher so it ignores its own log file and does not re-trigger
+  on log writes.
+- Kept the watcher focused on the supported event types: `created`, `modified`,
+  `deleted`, and `moved`.
