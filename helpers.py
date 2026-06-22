@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 LOG_FILE = "log_file"
 WATCH_PATHS = "watch_paths"
