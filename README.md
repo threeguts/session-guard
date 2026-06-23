@@ -1,33 +1,18 @@
 # Session-Guard
 
-Session-Guard is an experimental foundation for detecting browser-session theft.
-It currently monitors filesystem activity and records relevant events as JSONL.
+Session-Guard collects browser-profile filesystem activity or Windows process
+events and writes them to JSONL.
 
-## Versions
+## Collectors
 
-- **v0.0.0:** Generic recursive filesystem watcher supporting `created`,
-  `modified`, `deleted`, and `moved` events.
-- **v0.1.0:** Adds configurable Chrome profile monitoring and filters noisy files
-  and directories while preserving the generic v0.0.0 mode.
-
-## v0.1.0 scope
-
-The current version:
-
-- Watches the configured Chrome `Default` and additional profile directories.
-- Supports multiple watch paths.
-- Ignores configured directory names such as `Cache`, `Code Cache`, and
-  `GPUCache`.
-- Ignores configured filename patterns such as `*.tmp`, `*.log`, and `*.lock`.
-- Writes one structured JSON object per line to the configured log file.
-- Preserves generic recursive monitoring when Chromium mode is disabled.
-
-This version monitors Chrome profile filesystem activity. It does not yet detect
-Chrome processes, classify suspicious activity, or respond to session theft.
+- `watchdog`: Watches configured Chromium profiles. It records created,
+  modified, deleted, and moved files while applying the configured exclusions.
+- `etw`: Records `PROCESSSTART` and `PROCESSSTOP` events from the Windows kernel
+  process provider. ETW requires an elevated terminal.
 
 ## Configuration
 
-Edit `config.json` before starting the watcher:
+Edit `config.json`:
 
 ```json
 {
@@ -37,22 +22,24 @@ Edit `config.json` before starting the watcher:
   "ignored_directories": ["Cache", "Code Cache", "GPUCache"],
   "ignored_files": ["*.tmp", "*.log", "*.lock"],
   "log_file": "events.jsonl",
-  "mode": "chromium"
+  "mode": "chromium",
+  "collector": "watchdog"
 }
 ```
 
-Set `mode` to `chromium` to monitor the configured profiles. Any other value
-uses the original generic watcher and monitors the current directory.
+Set `collector` to `etw` to use ETW. Set `mode` to `chromium` to watch only the
+configured profiles; any other value watches the current directory.
+
+"mode": "chromium"/"",
+"collector": "watchdog"
+
+"mode": "",
+"collector": "etw"
 
 ## Run
-
-From the project directory:
 
 ```powershell
 python main.py
 ```
 
-Stop the watcher with `Ctrl+C`.
-
-Each accepted event is appended to the configured JSONL file with a UTC
-timestamp, event type, source path, and directory flag.
+Stop with `Ctrl+C`. Accepted events are appended to the configured JSONL file.

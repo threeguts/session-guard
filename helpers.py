@@ -1,15 +1,23 @@
 import json
 from typing import Any
+from pathlib import Path
 
 LOG_FILE = "log_file"
 WATCH_PATHS = "watch_paths"
 IGNORED_DIRS = "ignored_directories"
 IGNORED_FILES = "ignored_files"
 MODE = "mode"
-CONFIG = "./config.json"
+COLLECTOR = "collector"
+PROJECT_ROOT = Path(__file__).resolve().parent
+CONFIG = PROJECT_ROOT / "config.json"
 
 def get_log_file():
-    return json.loads(open(CONFIG, "r").read()).get(LOG_FILE)
+    configured_path = Path(
+        json.loads(CONFIG.read_text(encoding="utf-8")).get(LOG_FILE)
+    )
+    if configured_path.is_absolute():
+        return str(configured_path)
+    return str(PROJECT_ROOT / configured_path)
 
 def get_watch_paths():
     return json.loads(open(CONFIG, "r").read()).get(WATCH_PATHS)
@@ -22,3 +30,6 @@ def get_ignored_files():
 
 def get_mode():
     return json.loads(open(CONFIG, "r").read()).get(MODE)
+
+def get_collector():
+    return json.loads(open(CONFIG, "r").read()).get(COLLECTOR)

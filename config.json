@@ -16,5 +16,7 @@
         "*.lock"
     ],
     "log_file":"events.jsonl",
-    "mode":"chromium"
+    "mode":"",
+    "collector":"etw"
+
 }

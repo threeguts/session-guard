@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.0 - 2026-06-23
+
+- Added selectable `watchdog` and `etw` collectors.
+- Added ETW collection for process start and stop events on Windows.
+- Added raw ETW event output to the configured JSONL file.
+- Moved collector implementations under `collectors/`.
+- Resolved relative log paths from the project directory.
+
 ## v0.1.0 - 2026-06-21
 
 ### New

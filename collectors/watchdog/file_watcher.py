@@ -17,7 +17,7 @@ IGNORED_FILES = {
 
 class FileEventHandler(FileSystemEventHandler):
     def __init__(self, logs:str):
-        self.log_file = logs
+        self.log_file = Path(logs).resolve()
 
     def write_event(self, event: FileSystemEvent, event_type:str):
         event_log = {
@@ -29,7 +29,7 @@ class FileEventHandler(FileSystemEventHandler):
         }
 
 
-        with open(self.log_file, "a", encoding="utf-8") as file:
+        with self.log_file.open("a", encoding="utf-8") as file:
             file.write(json.dumps(event_log)+ "\n")
     
     def log_event(self, event: FileSystemEvent, event_type: str):
@@ -37,7 +37,7 @@ class FileEventHandler(FileSystemEventHandler):
 
     def on_any_event(self, event: FileSystemEvent):
         path = Path(str(event.src_path))
-        if str(event.src_path).endswith(self.log_file):
+        if path.resolve() == self.log_file:
             return
         if event.event_type not in EVENT_TYPE:
             return
