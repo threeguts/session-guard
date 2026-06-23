@@ -1,35 +1,16 @@
-import os
-import time
-from watchdog.observers import Observer
-from file_watcher import FileEventHandler
-from helpers import get_log_file, get_watch_paths, get_mode
+from helpers import get_collector
+from collectors.etw_collector import run_process_monitor
+from collectors.watchdog.watchdog_collector import run_watchdog
 
-BROWSER_FILTER = "chromium"
+COLLECTOR_FILTER = "etw"
 
 def main():
-    event_handler = FileEventHandler(get_log_file())
-    observer = Observer()
-    if get_mode() == BROWSER_FILTER:
-        for path in get_watch_paths():
-            if os.path.exists(path):
-                print(f"Watching {path}..")
-                observer.schedule(event_handler, path, recursive=True)
-            else:
-                print(f"Path {path} does not exist..")
+    if get_collector() == COLLECTOR_FILTER:
+        run_process_monitor()
+        return
     else:
-        observer.schedule(event_handler, ".", recursive=True)
-
-    observer.start()
-    print("Observer started..")
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("Stopping observer..")
-    finally:
-        observer.stop()
-        observer.join()
-        print("Observer stopped..")
+        run_watchdog()
+        return
 
 if __name__ == "__main__":
     main()
