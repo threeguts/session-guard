@@ -1,8 +1,8 @@
 {
-    "watch_paths":[
-        "C:\\Users\\faran\\AppData\\Local\\Google\\Chrome\\User Data\\Default",
-        "C:\\Users\\faran\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1"
-      ],
+    "watch_paths": [
+      "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default",
+      "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Profile 1"
+    ],
     "ignored_directories":[
         "Cache",
         "Code Cache",

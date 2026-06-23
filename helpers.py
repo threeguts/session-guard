@@ -1,3 +1,4 @@
+import os
 import json
 from typing import Any
 from pathlib import Path
@@ -20,7 +21,8 @@ def get_log_file():
     return str(PROJECT_ROOT / configured_path)
 
 def get_watch_paths():
-    return json.loads(open(CONFIG, "r").read()).get(WATCH_PATHS)
+    paths = json.loads(CONFIG.read_text(encoding="utf-8")).get(WATCH_PATHS, [])
+    return [os.path.expandvars(path) for path in paths]
 
 def get_ignored_directories():
     return json.loads(open(CONFIG, "r").read()).get(IGNORED_DIRS)
