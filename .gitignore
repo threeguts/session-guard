@@ -1,1 +1,3 @@
 NOTES.md
+*.pyc
+events.jsonl

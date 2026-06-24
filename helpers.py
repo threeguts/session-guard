@@ -11,6 +11,7 @@ MODE = "mode"
 COLLECTOR = "collector"
 PROJECT_ROOT = Path(__file__).resolve().parent
 CONFIG = PROJECT_ROOT / "config.json"
+NOISE_FILTER = "noise_filter"
 
 def get_log_file():
     configured_path = Path(
@@ -35,3 +36,6 @@ def get_mode():
 
 def get_collector():
     return json.loads(open(CONFIG, "r").read()).get(COLLECTOR)
+
+def get_noise_filter():
+    return json.loads(open(CONFIG, "r").read()).get(NOISE_FILTER)

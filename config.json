@@ -17,6 +17,6 @@
     ],
     "log_file":"events.jsonl",
     "mode":"",
-    "collector":"etw"
-
+    "collector":"etw",
+    "noise_filter":"on"
 }
