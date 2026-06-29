@@ -32,6 +32,10 @@ NUMERIC_FIELDS = {
     "HardFaultCount",
 }
 TIMESTAMP_FIELDS = {"CreateTime", "ExitTime"}
+EVENT_NAMES = {
+    "PROCESSSTART": "process_start",
+    "PROCESSSTOP": "process_stop",
+}
 
 
 def normalize_event_data(event_data: dict[str, Any]) -> dict[str, Any]:
@@ -58,6 +62,46 @@ def normalize_event_data(event_data: dict[str, Any]) -> dict[str, Any]:
 
     return normalized
 
+
+def build_log_entry(
+    event_id: int,
+    task_name: str,
+    event_data: dict[str, Any],
+) -> dict[str, Any]:
+    timestamp = event_data.get("CreateTime")
+    if task_name == "PROCESSSTOP":
+        timestamp = event_data.get("ExitTime")
+
+    log_entry = {
+        "collector": "etw",
+        "event": EVENT_NAMES.get(task_name, task_name.lower()),
+        "event_id": event_id,
+        "time": timestamp,
+        "pid": event_data.get("ProcessID"),
+        "process_sequence": event_data.get("ProcessSequenceNumber"),
+        "parent_pid": event_data.get("ParentProcessID"),
+        "parent_process_sequence": event_data.get("ParentProcessSequenceNumber"),
+        "image": event_data.get("ImageName"),
+        "session_id": event_data.get("SessionID"),
+        "is_elevated": event_data.get("ProcessTokenIsElevated"),
+        "token_elevation_type": event_data.get("ProcessTokenElevationType")
+        or event_data.get("TokenElevationType"),
+    }
+
+    command_line = event_data.get("CommandLine")
+    if command_line:
+        log_entry["command_line"] = command_line
+
+    if task_name == "PROCESSSTOP":
+        log_entry["exit_code"] = event_data.get("ExitCode")
+
+    return {
+        key: value
+        for key, value in log_entry.items()
+        if value not in (None, "")
+    }
+
+
 def handle_event(event: tuple[int, dict[str, Any]]) -> None:
 
     event_id, event_data = event
@@ -79,19 +123,20 @@ def handle_event(event: tuple[int, dict[str, Any]]) -> None:
         if image_name=="git.exe" or image_name=="conhost.exe":
             return
 
+    log_entry = build_log_entry(event_id, task_name, event_data)
+
     with open(get_log_file(), "a", encoding="utf-8") as file:
-        json.dump(event_data, file)
+        json.dump(log_entry, file)
         file.write("\n")
 
     print("\n" + "=" * 60)
-    print(f"Task:         {task_name}")
-    print(f"Event ID:     {event_id}")
-    print(f"PID:          {process_id}")
-    print(f"Image:        {image_name}")
+    print(f"Event:        {log_entry.get('event')}")
+    print(f"PID:          {log_entry.get('pid')}")
+    print(f"Image:        {log_entry.get('image')}")
     if parent_process_id is not None:
-        print(f"Parent PID:   {parent_process_id}")
+        print(f"Parent PID:   {log_entry.get('parent_pid')}")
     if exit_code is not None:
-        print(f"Exit code:    {exit_code}")
+        print(f"Exit code:    {log_entry.get('exit_code')}")
 
 
 def run_process_monitor() -> None:

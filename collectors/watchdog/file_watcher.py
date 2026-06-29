@@ -21,13 +21,15 @@ class FileEventHandler(FileSystemEventHandler):
 
     def write_event(self, event: FileSystemEvent, event_type:str):
         event_log = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "event_type": event_type,
+            "collector": "watchdog",
+            "event": f"file_{event_type}",
+            "time": datetime.now(timezone.utc).isoformat(),
             "path": event.src_path,
-            "dest_path": event.dest_path,
             "is_dir": event.is_directory,
         }
 
+        if event.dest_path:
+            event_log["dest_path"] = event.dest_path
 
         with self.log_file.open("a", encoding="utf-8") as file:
             file.write(json.dumps(event_log)+ "\n")
