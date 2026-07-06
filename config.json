@@ -3,6 +3,20 @@
       "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default",
       "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Profile 1"
     ],
+    "browser_roots":[
+      "%LOCALAPPDATA%\\Google\\Chrome\\User Data"
+    ],
+    "sensitive_paths":[
+      "Network\\Cookies",
+      "Network\\Cookies-wal",
+      "Network\\Cookies-shm",
+      "Network\\Cookies-journal",
+      "Login Data",
+      "Login Data-wal",
+      "Login Data-shm",
+      "Login Data-journal",
+      "Local State"
+    ],
     "ignored_directories":[
         "Cache",
         "Code Cache",

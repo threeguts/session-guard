@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from fnmatch import fnmatch
 from datetime import datetime, timezone
-from helpers import get_ignored_directories, get_ignored_files
+from config_helpers import get_ignored_directories, get_ignored_files
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 
 EVENT_TYPE = [

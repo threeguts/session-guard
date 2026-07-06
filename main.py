@@ -1,5 +1,5 @@
-from helpers import get_collector
-from collectors.etw_collector import run_process_monitor
+from config_helpers import get_collector
+from collectors.etw.etw_collector import run_process_monitor
 from collectors.watchdog.watchdog_collector import run_watchdog
 
 COLLECTOR_FILTER = "etw"

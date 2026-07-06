@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.3.0 - 2026-07-06
+
+- Added ETW file-event collection through `Microsoft-Windows-Kernel-File`.
+- Added file-event path enrichment using cached ETW file objects.
+- Added ETW filtering for browser roots plus sensitive profile paths.
+- Added `browser_roots`, `sensitive_paths`, and `noise_filter` configuration.
+- Cleaned up ETW log entry building to share common process/file fields.
+
 ## v0.2.0 - 2026-06-23
 
 - Added selectable `watchdog` and `etw` collectors.

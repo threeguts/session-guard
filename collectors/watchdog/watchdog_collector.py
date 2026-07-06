@@ -2,7 +2,7 @@ import os
 import time
 from watchdog.observers import Observer
 from .file_watcher import FileEventHandler
-from helpers import get_log_file, get_watch_paths, get_mode
+from config_helpers import get_log_file, get_watch_paths, get_mode
 
 BROWSER_FILTER = "chromium"
 
