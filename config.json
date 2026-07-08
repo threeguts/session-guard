@@ -4,7 +4,9 @@
       "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Profile 1"
     ],
     "browser_roots":[
-      "%LOCALAPPDATA%\\Google\\Chrome\\User Data"
+      "%LOCALAPPDATA%\\Google\\Chrome\\User Data",
+      "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default",
+      "%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\User Data"
     ],
     "sensitive_paths":[
       "Network\\Cookies",

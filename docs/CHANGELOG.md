@@ -7,6 +7,12 @@
 - Added ETW filtering for browser roots plus sensitive profile paths.
 - Added `browser_roots`, `sensitive_paths`, and `noise_filter` configuration.
 - Cleaned up ETW log entry building to share common process/file fields.
+- Split ETW helpers into focused `etw_helpers` and `logs` modules.
+- Added a queue-backed ETW JSONL writer that drains pending events on shutdown.
+- Added ETW task-name filtering for the subscribed process and file events.
+- Improved file-path caching for `FileObject` and per-process `FileHandle`
+  values.
+- Cached configuration reads and expanded the sample browser roots.
 
 ## v0.2.0 - 2026-06-23
 

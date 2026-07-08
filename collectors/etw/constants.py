@@ -1,30 +1,9 @@
-from typing import Any 
+from typing import Any
 
 ETW_PROVIDERS = [
     ("Microsoft-Windows-Kernel-Process", "{22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716}"),
     ("Microsoft-Windows-Kernel-File", "{EDD08927-9CC4-4E65-B970-C2560FB5C289}"),
 ]
-
-NUMERIC_FIELDS = {
-    "ProcessID",
-    "ProcessSequenceNumber",
-    "ParentProcessID",
-    "ParentProcessSequenceNumber",
-    "SessionID",
-    "ProcessTokenElevationType",
-    "ProcessTokenIsElevated",
-    "ExitCode",
-    "TokenElevationType",
-    "HandleCount",
-    "CommitCharge",
-    "CommitPeak",
-    "CPUCycleCount",
-    "ReadOperationCount",
-    "WriteOperationCount",
-    "ReadTransferKiloBytes",
-    "WriteTransferKiloBytes",
-    "HardFaultCount",
-}
 
 EVENT_NAMES = {
     "PROCESSSTART": "process_start",
@@ -43,7 +22,6 @@ PROVIDER_NAMES = {
     FILE_PROVIDER_ID: "Microsoft-Windows-Kernel-File",
 }
 
-TIMESTAMP_FIELDS = {"CreateTime", "ExitTime"}
 PROCESS_EVENTS = {"PROCESSSTART", "PROCESSSTOP"}
 FILE_EVENTS = {
     "CREATE",
@@ -52,6 +30,8 @@ FILE_EVENTS = {
     "CLOSE",
     "CLEANUP",
 }
-FILE_OBJECT_FIELDS = ("FileObject", "FileKey", "FileObjectPointer", "FileHandle")
+FILE_OBJECT_FIELDS = ("FileObject", "FileKey", "FileObjectPointer")
+FILE_HANDLE_FIELDS = ("FileHandle",)
 PROCESS_CACHE: dict[int, dict[str, Any]] = {}
 FILE_OBJECT_PATHS: dict[str, str] = {}
+NOISY_IMAGES = {"git.exe", "conhost.exe"}

@@ -1,6 +1,12 @@
 from typing import Any
-from .constants import FILE_EVENTS, EVENT_NAMES
-from .helpers import get_event_pid, get_process_info, clean_log_entry, get_file_object, get_event_timestamp, get_file_path
+from ..constants import FILE_EVENTS, EVENT_NAMES
+from ..etw_helpers.event_helpers import (
+    clean_log_entry,
+    get_event_timestamp,
+    normalize_timestamp,
+)
+from ..etw_helpers.file_helpers import get_file_object, get_file_path
+from ..etw_helpers.process_helpers import get_event_pid, get_process_info
 
 def build_log_entry(
     event_id: int,
@@ -41,8 +47,7 @@ def build_log_entry(
 
 def get_log_time(task_name: str, event_data: dict[str, Any]) -> Any:
     if task_name == "PROCESSSTART":
-        return event_data.get("CreateTime")
+        return normalize_timestamp(event_data.get("CreateTime"))
     if task_name == "PROCESSSTOP":
-        return event_data.get("ExitTime")
-    return get_event_timestamp(event_data)
-
+        return normalize_timestamp(event_data.get("ExitTime"))
+    return normalize_timestamp(get_event_timestamp(event_data))

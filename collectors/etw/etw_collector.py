@@ -1,8 +1,8 @@
-from __future__ import annotations
 import etw
 import time
 from .event_handling import handle_event
-from .constants import ETW_PROVIDERS
+from .logs.log_handler import start_event_writer, request_event_stop, stop_event_writer
+from .constants import ETW_PROVIDERS, PROCESS_EVENTS, FILE_EVENTS
 
 def run_process_monitor() -> None:
     providers = [
@@ -13,13 +13,15 @@ def run_process_monitor() -> None:
         session_name=f"ProcessMonitorTest",
         providers=providers,
         event_callback=handle_event,
+        task_name_filters=sorted(PROCESS_EVENTS | FILE_EVENTS),
     )
 
-    print("Starting ETW process monitor...")
+    print("Starting ETW browser event monitor...")
     print("Press Ctrl+C to stop.\n")
 
     monitor_started = False
     try:
+        start_event_writer()
         monitor.start()
         monitor_started = True
         while True:
@@ -29,9 +31,11 @@ def run_process_monitor() -> None:
         print("\nCtrl+C received.")
 
     finally:
+        request_event_stop()
         print("Stopping ETW process monitor...")
         if monitor_started:
             monitor.stop()
+        stop_event_writer()
         print("Monitor stopped.")
 
 if __name__ == "__main__":
