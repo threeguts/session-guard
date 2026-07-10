@@ -19,12 +19,12 @@ def update_process_cache(event_data: dict[str, Any]) -> None:
         return
     PROCESS_CACHE[pid] = get_process_info(pid, event_data)
 
-
 def get_process_info(
     pid: int | None,
     event_data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     process_info = PROCESS_CACHE.get(pid, {}).copy() if pid is not None else {}
+    
     if event_data is None:
         return process_info
 
@@ -44,7 +44,6 @@ def get_process_info(
 
     process_info.update(clean_log_entry(event_process_info))
     return process_info
-
 
 def get_image_name(image_path: Any) -> Any:
     if isinstance(image_path, str):

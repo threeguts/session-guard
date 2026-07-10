@@ -17,7 +17,12 @@
       "Login Data-wal",
       "Login Data-shm",
       "Login Data-journal",
-      "Local State"
+      "Local State",
+      "Preferences",
+      "Network\\Reporting and NEL-journal",
+      "Network\\Reporting and NEL",
+      "Network\\Network Persistent State",
+      "SharedStorage-wal"
     ],
     "ignored_directories":[
         "Cache",

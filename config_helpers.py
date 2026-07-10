@@ -105,4 +105,4 @@ def ends_with_sensitive_path(path: Any) -> bool:
     return False
 
 def is_sensitive_path(path: Any) -> bool:
-    return is_inside_browser_root(path) and ends_with_sensitive_path(path)
+    return is_inside_browser_root(path) or ends_with_sensitive_path(path)

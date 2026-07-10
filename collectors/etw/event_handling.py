@@ -16,10 +16,9 @@ def handle_event(event: tuple[int, dict[str, Any]]) -> None:
 
     event_id, event_data = event
     task_name = str(event_data.get("Task Name", "")).upper()
-
+    
     if task_name not in (PROCESS_EVENTS | FILE_EVENTS):
         return
-
     if task_name == "PROCESSSTART":
         if get_event_pid(event_data) is None:
             return
@@ -30,6 +29,7 @@ def handle_event(event: tuple[int, dict[str, Any]]) -> None:
 
     provider_name = get_provider_name(event_data)
     log_entry = build_log_entry(event_id, task_name, event_data, provider_name)
+    image = log_entry.get("image")
 
     if task_name in FILE_EVENTS and not is_sensitive_path(log_entry.get("path")):
         return
@@ -37,19 +37,10 @@ def handle_event(event: tuple[int, dict[str, Any]]) -> None:
     if log_entry.get("pid") is None:
         return
 
-    image = log_entry.get("image")
-    if (
-        get_noise_filter() == "on"
-        and isinstance(image, str)
-        and image.casefold() in NOISY_IMAGES
-    ):
+    if get_noise_filter() == "on" and image in NOISY_IMAGES:
         return
 
     enqueue_log(log_entry)
-    summary = f"ETW {log_entry.get('event')} | pid={log_entry.get('pid')} | | image={log_entry.get('image')}"
-    if log_entry.get("path"):
-        summary += f" | path={log_entry.get('path')}"
-    print(summary)
 
     if task_name == "PROCESSSTOP":
         pid = get_event_pid(event_data)
