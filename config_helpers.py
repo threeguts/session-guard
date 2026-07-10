@@ -22,7 +22,11 @@ def read_config() -> dict[str, Any]:
     return json.loads(CONFIG.read_text(encoding="utf-8"))
 
 def get_log_file():
-    configured_path = Path(read_config().get(LOG_FILE))
+    configured_log_file = read_config().get(LOG_FILE)
+    if not isinstance(configured_log_file, str) or not configured_log_file:
+        configured_log_file = "events.jsonl"
+
+    configured_path = Path(configured_log_file)
     if configured_path.is_absolute():
         return str(configured_path)
     return str(PROJECT_ROOT / configured_path)
