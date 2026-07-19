@@ -28,6 +28,7 @@ def build_log_entry(
         "image": process_info.get("image"),
         "process_path": process_info.get("process_path"),
         "command_line": process_info.get("command_line"),
+        "attribution_source": process_info.get("attribution_source"),
     }
 
     if task_name in FILE_EVENTS:

@@ -1,5 +1,6 @@
 import os
 import json
+from fnmatch import fnmatch
 from functools import lru_cache
 from typing import Any
 from pathlib import Path
@@ -15,7 +16,29 @@ CONFIG = PROJECT_ROOT / "config.json"
 NOISE_FILTER = "noise_filter"
 FILE_PATH_FIELDS = ("FileName", "FilePath", "Path", "OpenPath", "Name")
 BROWSER_ROOTS = "browser_roots"
+BROWSER_PROCESSES = "browser_processes"
+LIVE_DETECTION = "live_detection"
+LIVE_FILE_EVENTS = "live_file_events"
+ARCHIVE_FILE_EVENTS = "archive_file_events"
+WRITER_BATCH_SIZE = "writer_batch_size"
+WRITER_FLUSH_INTERVAL_SECONDS = "writer_flush_interval_seconds"
+WRITER_HEALTH_INTERVAL_SECONDS = "writer_health_interval_seconds"
 SENSITIVE_PATHS = "sensitive_paths"
+DEFAULT_BROWSER_PROCESSES = ["chrome.exe", "brave.exe", "msedge.exe"]
+DEFAULT_LIVE_FILE_EVENTS = ["create", "read", "write"]
+DEFAULT_ARCHIVE_FILE_EVENTS = ["create", "read", "write", "cleanup", "close"]
+DEFAULT_WRITER_BATCH_SIZE = 100
+DEFAULT_WRITER_FLUSH_INTERVAL_SECONDS = 0.5
+DEFAULT_WRITER_HEALTH_INTERVAL_SECONDS = 5.0
+DEFAULT_SENSITIVE_PATHS = [
+    "Network\\Cookies*",
+    "Login Data*",
+    "Web Data*",
+    "History*",
+    "Local State",
+    "Preferences",
+    "Secure Preferences",
+]
 
 @lru_cache(maxsize=1)
 def read_config() -> dict[str, Any]:
@@ -36,10 +59,10 @@ def get_watch_paths():
     return [os.path.expandvars(path) for path in paths]
 
 def get_ignored_directories():
-    return read_config().get(IGNORED_DIRS)
+    return read_config().get(IGNORED_DIRS, [])
 
 def get_ignored_files():
-    return read_config().get(IGNORED_FILES)
+    return read_config().get(IGNORED_FILES, [])
 
 def get_mode():
     return read_config().get(MODE)
@@ -61,10 +84,63 @@ def get_browser_roots():
     config = read_config()
     return config.get(BROWSER_ROOTS) or config.get(WATCH_PATHS, [])
 
-def get_sensitive_paths():
-    return read_config().get(SENSITIVE_PATHS, [])
+def get_browser_processes():
+    return read_config().get(BROWSER_PROCESSES, DEFAULT_BROWSER_PROCESSES)
+
+def get_live_detection_enabled() -> bool:
+    return str(read_config().get(LIVE_DETECTION, "on")).casefold() == "on"
+
+def get_live_file_events() -> list[str]:
+    return get_string_list(LIVE_FILE_EVENTS, DEFAULT_LIVE_FILE_EVENTS)
+
+def get_archive_file_events() -> list[str]:
+    return get_string_list(ARCHIVE_FILE_EVENTS, DEFAULT_ARCHIVE_FILE_EVENTS)
+
+def get_sensitive_paths() -> list[str]:
+    return get_string_list(SENSITIVE_PATHS, DEFAULT_SENSITIVE_PATHS)
+
+def get_writer_batch_size() -> int:
+    return get_positive_int(WRITER_BATCH_SIZE, DEFAULT_WRITER_BATCH_SIZE)
+
+def get_writer_flush_interval_seconds() -> float:
+    return get_positive_float(
+        WRITER_FLUSH_INTERVAL_SECONDS,
+        DEFAULT_WRITER_FLUSH_INTERVAL_SECONDS,
+    )
+
+def get_writer_health_interval_seconds() -> float:
+    return get_positive_float(
+        WRITER_HEALTH_INTERVAL_SECONDS,
+        DEFAULT_WRITER_HEALTH_INTERVAL_SECONDS,
+    )
+
+def get_string_list(key: str, default: list[str]) -> list[str]:
+    values = read_config().get(key, default)
+    if not isinstance(values, list):
+        values = default
+    return [
+        str(value).casefold()
+        for value in values
+        if value not in (None, "")
+    ]
+
+def get_positive_int(key: str, default: int) -> int:
+    try:
+        value = int(read_config().get(key, default))
+    except (TypeError, ValueError):
+        return default
+    return value if value > 0 else default
+
+def get_positive_float(key: str, default: float) -> float:
+    try:
+        value = float(read_config().get(key, default))
+    except (TypeError, ValueError):
+        return default
+    return value if value > 0 else default
 
 def normalize_path(path: Any) -> str:
+    if isinstance(path, os.PathLike):
+        path = os.fspath(path)
     if not isinstance(path, str):
         return ""
     return os.path.expandvars(path).casefold().replace("/", "\\").rstrip("\\")
@@ -86,23 +162,25 @@ def is_inside_browser_root(path: Any) -> bool:
             return True
     return False
 
-def ends_with_sensitive_path(path: Any) -> bool:
-    normalized_path = normalize_path(path)
-    if not normalized_path:
+@lru_cache(maxsize=1)
+def get_normalized_sensitive_paths() -> tuple[str, ...]:
+    return tuple(
+        normalize_path(path).lstrip("\\")
+        for path in get_sensitive_paths()
+        if normalize_path(path).lstrip("\\")
+    )
+
+def is_sensitive_browser_path(path: Any) -> bool:
+    if not is_inside_browser_root(path):
         return False
 
-    sensitive_paths = get_sensitive_paths()
+    normalized_path = normalize_path(path)
+    sensitive_paths = get_normalized_sensitive_paths()
     if not sensitive_paths:
         return True
 
-    for sensitive_path in sensitive_paths:
-        normalized_sensitive = normalize_path(sensitive_path)
-        if normalized_sensitive and (
-            normalized_path == normalized_sensitive
-            or normalized_path.endswith("\\" + normalized_sensitive)
-        ):
-            return True
-    return False
-
-def is_sensitive_path(path: Any) -> bool:
-    return is_inside_browser_root(path) or ends_with_sensitive_path(path)
+    return any(
+        fnmatch(normalized_path, f"*\\{pattern}")
+        or fnmatch(normalized_path, f"*\\{pattern}\\*")
+        for pattern in sensitive_paths
+    )

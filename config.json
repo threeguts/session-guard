@@ -8,21 +8,35 @@
       "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default",
       "%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\User Data"
     ],
+    "browser_processes":[
+      "chrome.exe",
+      "brave.exe",
+      "msedge.exe"
+    ],
+    "live_detection":"on",
+    "live_file_events":[
+      "create",
+      "read",
+      "write"
+    ],
+    "archive_file_events":[
+      "create",
+      "read",
+      "write",
+      "cleanup",
+      "close"
+    ],
+    "writer_batch_size":100,
+    "writer_flush_interval_seconds":0.5,
+    "writer_health_interval_seconds":5.0,
     "sensitive_paths":[
-      "Network\\Cookies",
-      "Network\\Cookies-wal",
-      "Network\\Cookies-shm",
-      "Network\\Cookies-journal",
-      "Login Data",
-      "Login Data-wal",
-      "Login Data-shm",
-      "Login Data-journal",
+      "Network\\Cookies*",
+      "Login Data*",
+      "Web Data*",
+      "History*",
       "Local State",
       "Preferences",
-      "Network\\Reporting and NEL-journal",
-      "Network\\Reporting and NEL",
-      "Network\\Network Persistent State",
-      "SharedStorage-wal"
+      "Secure Preferences"
     ],
     "ignored_directories":[
         "Cache",

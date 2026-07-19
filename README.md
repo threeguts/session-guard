@@ -25,8 +25,9 @@ python -m pip install watchdog==6.0.0 pywintrace==0.2.0
   modified, deleted, and moved files while applying the configured exclusions.
 - `etw`: Records Windows kernel process events and selected kernel file events.
   File events are enriched through direct paths plus cached file objects, then
-  filtered to configured browser roots and sensitive profile paths. ETW uses a
-  background JSONL writer and requires an elevated terminal.
+  sensitive browser file objects are tracked so later reads/writes can be
+  correlated without archiving every browser-root read. ETW uses a background
+  JSONL writer and requires an elevated terminal.
 
 ## Configuration
 
@@ -43,16 +44,21 @@ Edit `config.json`:
     "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default",
     "%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\User Data"
   ],
+  "browser_processes": ["chrome.exe", "brave.exe", "msedge.exe"],
+  "live_detection": "on",
+  "live_file_events": ["create", "read", "write"],
+  "archive_file_events": ["create", "read", "write", "cleanup", "close"],
+  "writer_batch_size": 100,
+  "writer_flush_interval_seconds": 0.5,
+  "writer_health_interval_seconds": 5.0,
   "sensitive_paths": [
-    "Network\\Cookies",
-    "Network\\Cookies-wal",
-    "Network\\Cookies-shm",
-    "Network\\Cookies-journal",
-    "Login Data",
-    "Login Data-wal",
-    "Login Data-shm",
-    "Login Data-journal",
-    "Local State"
+    "Network\\Cookies*",
+    "Login Data*",
+    "Web Data*",
+    "History*",
+    "Local State",
+    "Preferences",
+    "Secure Preferences"
   ],
   "ignored_directories": [
     "Cache",
@@ -76,8 +82,19 @@ mode watches the current directory.
 - `watch_paths`: Profile folders used by the Watchdog collector.
 - `browser_roots`: Browser profile roots used to scope ETW file events. If this
   is missing, ETW falls back to `watch_paths`.
-- `sensitive_paths`: Relative file endings that ETW should keep under a browser
-  root. Leave this empty to keep all file events under the configured roots.
+- `browser_processes`: Process image names that ETW treats as browser-owned
+  activity for process and file logs.
+- `live_detection`: When `on`, prints selected ETW process/file detections from
+  the callback path before JSONL archive writes.
+- `live_file_events`: File event names shown in live detection output.
+- `archive_file_events`: File event names retained in the JSONL archive.
+- `writer_batch_size`, `writer_flush_interval_seconds`, and
+  `writer_health_interval_seconds`: Control the background JSONL writer batch
+  drain and queue health output.
+- `sensitive_paths`: ETW-only relative path patterns under `browser_roots`.
+  Path-bearing file events mark matching file objects as sensitive; later
+  reads/writes are retained only when they match those objects or carry a direct
+  sensitive path.
 - `ignored_directories` and `ignored_files`: Watchdog-only filesystem noise
   filters.
 - `noise_filter`: When `on`, drops known noisy process names from ETW output,

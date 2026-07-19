@@ -4,8 +4,8 @@
 
 - Added ETW file-event collection through `Microsoft-Windows-Kernel-File`.
 - Added file-event path enrichment using cached ETW file objects.
-- Added ETW filtering for browser roots plus sensitive profile paths.
-- Added `browser_roots`, `sensitive_paths`, and `noise_filter` configuration.
+- Added ETW filtering for browser roots.
+- Added `browser_roots` and `noise_filter` configuration.
 - Cleaned up ETW log entry building to share common process/file fields.
 - Split ETW helpers into focused `etw_helpers` and `logs` modules.
 - Added a queue-backed ETW JSONL writer that drains pending events on shutdown.
@@ -13,6 +13,16 @@
 - Improved file-path caching for `FileObject` and per-process `FileHandle`
   values.
 - Cached configuration reads and expanded the sample browser roots.
+- Added `browser_processes` configuration for ETW browser-owned process/file
+  logs.
+- Kept stopped browser PIDs briefly so delayed ETW file rows can still be
+  attributed.
+- Deduplicated repeated ETW `cleanup` and `close` file rows.
+- Added live ETW detection output before JSONL enqueueing.
+- Added `ingested_at`, `queued_at`, and `written_at` timing fields to ETW logs.
+- Batched the background ETW JSONL writer and added queue health output.
+- Added sensitive ETW file-object tracking so path-bearing sensitive browser
+  file events can retain later read/write rows by `FileObject`.
 
 ## v0.2.0 - 2026-06-23
 
