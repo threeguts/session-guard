@@ -6,6 +6,7 @@ Session-Guard collects browser-profile filesystem activity or Windows ETW events
 
 - Windows 10 or 11.
 - Python 3.10 (tested with Python 3.10.5).
+- .NET 8 SDK when building the TraceEvent file helper.
 - Administrator privileges when using the ETW collector.
 - A Chromium-based browser profile when using the Watchdog collector in
   `chromium` mode.
@@ -17,17 +18,26 @@ python -m pip install watchdog==6.0.0 pywintrace==0.2.0
 ```
 
 - `watchdog` provides filesystem event monitoring.
-- `pywintrace` provides the `etw` module used for Windows ETW tracing.
+- `pywintrace` provides the `etw` module used for process ETW tracing.
+- `Microsoft.Diagnostics.Tracing.TraceEvent` is used by the optional C# helper
+  for lower-latency kernel file ETW events.
+
+Build the TraceEvent helper before using the default ETW file source:
+
+```powershell
+dotnet build tools\SessionGuard.FileEtw\SessionGuard.FileEtw.csproj -c Release
+```
 
 ## Collectors
 
 - `watchdog`: Watches configured Chromium profiles. It records created,
   modified, deleted, and moved files while applying the configured exclusions.
 - `etw`: Records Windows kernel process events and selected kernel file events.
-  File events are enriched through direct paths plus cached file objects, then
-  sensitive browser file objects are tracked so later reads/writes can be
-  correlated without archiving every browser-root read. ETW uses a background
-  JSONL writer and requires an elevated terminal.
+  Process events stay on `pywintrace`; file events use the C# TraceEvent helper
+  by default and can fall back to `pywintrace` with configuration. File events
+  are scoped to browser roots and sensitive paths, then enriched with the Python
+  process cache before they are written to JSONL. ETW uses a background JSONL
+  writer and requires an elevated terminal.
 
 ## Configuration
 
@@ -48,6 +58,8 @@ Edit `config.json`:
   "live_detection": "on",
   "live_file_events": ["create", "read", "write"],
   "archive_file_events": ["create", "read", "write", "cleanup", "close"],
+  "etw_file_source": "traceevent",
+  "traceevent_helper_path": "tools\\SessionGuard.FileEtw\\bin\\Release\\net8.0\\SessionGuard.FileEtw.exe",
   "writer_batch_size": 100,
   "writer_flush_interval_seconds": 0.5,
   "writer_health_interval_seconds": 5.0,
@@ -88,6 +100,11 @@ mode watches the current directory.
   the callback path before JSONL archive writes.
 - `live_file_events`: File event names shown in live detection output.
 - `archive_file_events`: File event names retained in the JSONL archive.
+- `etw_file_source`: File event backend for ETW mode. Use `traceevent` for the
+  C# helper or `pywintrace` for the previous Python Kernel-File session.
+- `traceevent_helper_path`: Built helper executable used when
+  `etw_file_source` is `traceevent`. If it is missing, the collector attempts
+  `dotnet run --project tools\SessionGuard.FileEtw`.
 - `writer_batch_size`, `writer_flush_interval_seconds`, and
   `writer_health_interval_seconds`: Control the background JSONL writer batch
   drain and queue health output.

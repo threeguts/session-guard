@@ -26,6 +26,8 @@
       "cleanup",
       "close"
     ],
+    "etw_file_source":"traceevent",
+    "traceevent_helper_path":"tools\\SessionGuard.FileEtw\\bin\\Release\\net8.0\\SessionGuard.FileEtw.exe",
     "writer_batch_size":100,
     "writer_flush_interval_seconds":0.5,
     "writer_health_interval_seconds":5.0,

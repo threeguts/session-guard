@@ -30,7 +30,7 @@ from config_helpers import (
     get_noise_filter,
     is_sensitive_browser_path,
 )
-from .logs.log_builder import build_log_entry
+from .logs.log_builder import build_external_file_log_entry, build_log_entry
 from .logs.log_handler import enqueue_log
 
 STOP_REQUESTED = Event()
@@ -131,6 +131,36 @@ def handle_file_event(event: tuple[int, dict[str, Any]]) -> None:
     provider_name = get_provider_name(event_data)
     log_entry = build_log_entry(event_id, task_name, event_data, provider_name)
     log_entry["ingested_at"] = ingested_at
+    image = log_entry.get("image")
+    is_browser_owner = is_browser_image(image)
+
+    emit_live_file_event(log_entry, is_browser_owner)
+
+    if not should_archive_file_event(log_entry, is_browser_owner):
+        return
+
+    if get_noise_filter() == "on" and image in NOISY_IMAGES:
+        return
+
+    enqueue_log(log_entry)
+
+
+def handle_external_file_event(file_row: dict[str, Any]) -> None:
+    if STOP_REQUESTED.is_set():
+        return
+
+    log_entry = build_external_file_log_entry(file_row)
+    log_entry["ingested_at"] = utc_now()
+
+    pid = log_entry.get("pid")
+    path = log_entry.get("path")
+    event_name = str(log_entry.get("event", "")).casefold()
+    if pid is None or not path or event_name not in {"create", "read", "write"}:
+        return
+
+    if is_duplicate_file_event(event_name.upper(), pid, path):
+        return
+
     image = log_entry.get("image")
     is_browser_owner = is_browser_image(image)
 

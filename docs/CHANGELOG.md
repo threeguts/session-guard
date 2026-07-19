@@ -23,6 +23,8 @@
 - Batched the background ETW JSONL writer and added queue health output.
 - Added sensitive ETW file-object tracking so path-bearing sensitive browser
   file events can retain later read/write rows by `FileObject`.
+- Added a TraceEvent-based C# helper as the default ETW file-event source while
+  keeping `pywintrace` for process events and as a file-event fallback.
 
 ## v0.2.0 - 2026-06-23
 

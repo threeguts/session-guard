@@ -24,12 +24,18 @@ WRITER_BATCH_SIZE = "writer_batch_size"
 WRITER_FLUSH_INTERVAL_SECONDS = "writer_flush_interval_seconds"
 WRITER_HEALTH_INTERVAL_SECONDS = "writer_health_interval_seconds"
 SENSITIVE_PATHS = "sensitive_paths"
+ETW_FILE_SOURCE = "etw_file_source"
+TRACEEVENT_HELPER_PATH = "traceevent_helper_path"
 DEFAULT_BROWSER_PROCESSES = ["chrome.exe", "brave.exe", "msedge.exe"]
 DEFAULT_LIVE_FILE_EVENTS = ["create", "read", "write"]
 DEFAULT_ARCHIVE_FILE_EVENTS = ["create", "read", "write", "cleanup", "close"]
 DEFAULT_WRITER_BATCH_SIZE = 100
 DEFAULT_WRITER_FLUSH_INTERVAL_SECONDS = 0.5
 DEFAULT_WRITER_HEALTH_INTERVAL_SECONDS = 5.0
+DEFAULT_ETW_FILE_SOURCE = "traceevent"
+DEFAULT_TRACEEVENT_HELPER_PATH = (
+    "tools\\SessionGuard.FileEtw\\bin\\Release\\net8.0\\SessionGuard.FileEtw.exe"
+)
 DEFAULT_SENSITIVE_PATHS = [
     "Network\\Cookies*",
     "Login Data*",
@@ -98,6 +104,26 @@ def get_archive_file_events() -> list[str]:
 
 def get_sensitive_paths() -> list[str]:
     return get_string_list(SENSITIVE_PATHS, DEFAULT_SENSITIVE_PATHS)
+
+def get_etw_file_source() -> str:
+    source = read_config().get(ETW_FILE_SOURCE, DEFAULT_ETW_FILE_SOURCE)
+    if not isinstance(source, str):
+        return DEFAULT_ETW_FILE_SOURCE
+    source = source.casefold().strip()
+    return source if source in {"pywintrace", "traceevent"} else DEFAULT_ETW_FILE_SOURCE
+
+def get_traceevent_helper_path() -> str:
+    configured_path = read_config().get(
+        TRACEEVENT_HELPER_PATH,
+        DEFAULT_TRACEEVENT_HELPER_PATH,
+    )
+    if not isinstance(configured_path, str) or not configured_path:
+        configured_path = DEFAULT_TRACEEVENT_HELPER_PATH
+
+    helper_path = Path(configured_path)
+    if helper_path.is_absolute():
+        return str(helper_path)
+    return str(PROJECT_ROOT / helper_path)
 
 def get_writer_batch_size() -> int:
     return get_positive_int(WRITER_BATCH_SIZE, DEFAULT_WRITER_BATCH_SIZE)
